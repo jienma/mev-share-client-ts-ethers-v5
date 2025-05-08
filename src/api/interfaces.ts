@@ -1,4 +1,4 @@
-import { LogParams } from 'ethers'
+import { BigNumber } from 'ethers'
 
 /**
  * Used to specify which type of event to listen for.
@@ -176,7 +176,7 @@ export interface SimBundleOptions {
     /** default = parentBlock.gasLimit */
     gasLimit?: number,
     /** default = parentBlock.baseFeePerGas */
-    baseFee?: bigint,
+    baseFee?: BigNumber,
     /** default = 5 (defined in seconds) */
     timeout?: number,
 }
@@ -204,10 +204,10 @@ export interface ISimBundleResult {
     success: boolean,
     error?: string,
     stateBlock: number,
-    mevGasPrice: bigint,
-    profit: bigint,
-    refundableValue: bigint,
-    gasUsed: bigint,
+    mevGasPrice: BigNumber,
+    profit: BigNumber,
+    refundableValue: BigNumber,
+    gasUsed: BigNumber,
     logs?: SimBundleLogs[],
 }
 
@@ -216,10 +216,10 @@ export const SimBundleResult = (response: ISimBundleResponse): ISimBundleResult 
     success: response.success,
     error: response.error,
     stateBlock: parseInt(response.stateBlock, 16),
-    mevGasPrice: BigInt(response.mevGasPrice),
-    profit: BigInt(response.profit),
-    refundableValue: BigInt(response.refundableValue),
-    gasUsed: BigInt(response.gasUsed),
+    mevGasPrice: BigNumber.from(response.mevGasPrice),
+    profit: BigNumber.from(response.profit),
+    refundableValue: BigNumber.from(response.refundableValue),
+    gasUsed: BigNumber.from(response.gasUsed),
     logs: response.logs,
 })
 
@@ -266,11 +266,11 @@ export interface IPendingTransaction extends Omit<Omit<Omit<IMevShareEvent, 'txs
     /**
      * {@link IMevShareEvent.mevGasPrice}
      */
-    mevGasPrice?: bigint,
+    mevGasPrice?: BigNumber,
     /**
      * {@link IMevShareEvent.gasUsed}
      */
-    gasUsed?: bigint,
+    gasUsed?: BigNumber,
 }
 
 /** Pending bundle from the MEV-Share event stream. */
@@ -278,11 +278,11 @@ export interface IPendingBundle extends Omit<Omit<IMevShareEvent, 'mevGasPrice'>
     /**
      * {@link IMevShareEvent.mevGasPrice}
      */
-    mevGasPrice?: bigint,
+    mevGasPrice?: BigNumber,
     /**
      * {@link IMevShareEvent.gasUsed}
      */
-    gasUsed?: bigint,
+    gasUsed?: BigNumber,
 }
 
 /** A past event from the MEV-Share event stream. */
@@ -297,16 +297,29 @@ export class EventHistoryEntry {
         }>,
         hash: string,
         logs?: Array<LogParams>,
-        gasUsed: bigint,
-        mevGasPrice: bigint,
+        gasUsed: BigNumber,
+        mevGasPrice: BigNumber,
     }
     constructor(entry: IEventHistoryEntry) {
         this.block = entry.block
         this.timestamp = entry.timestamp
         this.hint = {
             ...entry.hint,
-            gasUsed: entry.hint.gasUsed ? BigInt(entry.hint.gasUsed) : BigInt(0),
-            mevGasPrice: entry.hint.mevGasPrice ? BigInt(entry.hint.mevGasPrice) : BigInt(0),
+            gasUsed: entry.hint.gasUsed ? BigNumber.from(entry.hint.gasUsed) : BigNumber.from(0),
+            mevGasPrice: entry.hint.mevGasPrice ? BigNumber.from(entry.hint.mevGasPrice) : BigNumber.from(0),
         }
     }
 }
+
+// Define LogParams type compatible with ethers v5
+export type LogParams = {
+    address: string;
+    topics: string[];
+    data: string;
+    blockNumber?: number;
+    transactionHash?: string;
+    transactionIndex?: number;
+    blockHash?: string;
+    logIndex?: number;
+    removed?: boolean;
+};

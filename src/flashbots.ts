@@ -1,4 +1,4 @@
-import { id as ethersId, Wallet } from "ethers"
+import { utils, Wallet } from "ethers"
 
 export type JsonRpcData = {
     id: number,
@@ -21,7 +21,7 @@ export const getRpcRequest = async (params: any, method: string, authSigner: Wal
         id: 69,
         jsonrpc: "2.0"
     }
-    const signature = `${authSigner.address}:${await authSigner.signMessage(ethersId(JSON.stringify(body)))}`
+    const signature = `${authSigner.address}:${await authSigner.signMessage(utils.id(JSON.stringify(body)))}`
     const headers = {
         'Content-Type': 'application/json',
         'X-Flashbots-Signature': signature,

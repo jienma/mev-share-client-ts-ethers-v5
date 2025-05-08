@@ -1,4 +1,5 @@
 import { BundleParams, HintPreferences, SimBundleOptions, TransactionOptions } from './interfaces'
+import { BigNumber } from 'ethers'
 
 /**
  * Convert name format of user-specified hints for MEV-Share API requests.
@@ -84,10 +85,10 @@ export function mungeSimBundleOptions(params: SimBundleOptions) {
     return {
         ...params,
         // coinbase & timeout can be left as they are
-        parentBlock: params.parentBlock && `0x${BigInt(params.parentBlock).toString(16)}`,
-        blockNumber: params.blockNumber && `0x${BigInt(params.blockNumber).toString(16)}`,
-        timestamp: params.timestamp && `0x${BigInt(params.timestamp).toString(16)}`,
-        gasLimit: params.gasLimit && `0x${BigInt(params.gasLimit).toString(16)}`,
-        baseFee: params.baseFee && `0x${params.baseFee.toString(16)}`,
+        parentBlock: params.parentBlock && BigNumber.from(params.parentBlock).toHexString(),
+        blockNumber: params.blockNumber && BigNumber.from(params.blockNumber).toHexString(),
+        timestamp: params.timestamp && BigNumber.from(params.timestamp).toHexString(),
+        gasLimit: params.gasLimit && BigNumber.from(params.gasLimit).toHexString(),
+        baseFee: params.baseFee && BigNumber.from(params.baseFee).toHexString(),
     }
 }

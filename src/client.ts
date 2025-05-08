@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios"
-import { Transaction, Wallet } from 'ethers'
+import { Wallet } from 'ethers'
 import EventSource from "eventsource"
 import { JsonRpcError, NetworkFailure, UnimplementedStreamEvent } from './error'
 import { getRpcRequest, JsonRpcData } from './flashbots';
@@ -225,22 +225,26 @@ export default class MevShareClient {
                     const tx = await provider.getTransaction(firstTx.hash)
                     if (tx) {
                         provider.removeListener('block', waitForTx)
-                        const signedTx = Transaction.from(tx).serialized
+                        const signedTx = tx.raw
                         console.log(`Found transaction hash: ${ firstTx.hash } onchain at block number: ${ tx.blockNumber }`)
                         if (!tx.blockNumber) {
                             return reject(new Error("Transaction hash: " + firstTx.hash + " does not have blockNumber"))
                         }
                         const simBlock = simOptions?.parentBlock || tx.blockNumber - 1
-                        const paramsWithSignedTx = {
-                            ...params,
-                            body: [
-                                {
-                                    tx: signedTx, canRevert: false
-                                },
-                                ...params.body.slice(1),
-                            ],
+                        if (signedTx) {
+                            const paramsWithSignedTx = {
+                                ...params,
+                                body: [
+                                    {
+                                        tx: signedTx as string, canRevert: false
+                                    },
+                                    ...params.body.slice(1),
+                                ],
+                            }
+                            resolve(this.simBundle(paramsWithSignedTx, {...simOptions, parentBlock: simBlock}))
+                        } else {
+                            return reject(new Error("Could not retrieve raw signed transaction for simulation."))
                         }
-                        resolve(this.simBundle(paramsWithSignedTx, {...simOptions, parentBlock: simBlock}))
                         return true
                     }
                     return false
